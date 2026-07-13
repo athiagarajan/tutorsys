@@ -1,0 +1,518 @@
+Student Tuition Management System
+Objective
+
+Design and implement a full-stack web application for managing my private tutoring business. The system should automate student management, scheduling, attendance tracking, monthly billing, payment tracking, and parent communication.
+
+The solution should be production-quality, modular, maintainable, and designed with future enhancements in mind.
+
+Business Background
+
+I teach students privately.
+
+Teaching schedule:
+
+Sundays:
+8:00 AM – 7:00 PM
+Lunch break approximately 1:00 PM – 2:00 PM
+Weekdays:
+Monday through Friday
+5:00 PM – 8:00 PM
+
+Each class is normally:
+
+1 hour
+Begins at the start of an hour
+Recurs weekly
+
+Examples:
+
+Sunday 8 AM
+
+Sunday 9 AM
+
+Wednesday 6 PM
+
+Thursday 7 PM
+
+Most students attend once every week.
+
+Sometimes parents enroll two or more children.
+
+In that case the sessions are usually consecutive.
+
+Example:
+
+Student A: Sunday 9–10
+
+Student B: Sunday 10–11
+
+Subjects
+
+Primary subject:
+
+Mathematics
+
+Occasionally:
+
+Physics
+Computer Science
+Statistics
+
+The design should allow additional subjects to be added without schema changes.
+
+Student Information
+
+Maintain complete information for every student.
+
+Examples:
+
+First name
+Last name
+Preferred name
+Grade
+School
+Subject(s)
+Date joined
+Active/Inactive status
+Notes
+
+Each student belongs to one parent or guardian account.
+
+Parent / Guardian Information
+
+Maintain:
+
+Parent name
+Email
+Phone numbers
+Address
+Preferred communication method
+Notes
+
+One parent may have multiple students.
+
+Parents should have login credentials.
+
+Parents should only be able to view information related to their own children.
+
+Weekly Schedule
+
+Maintain each student's recurring schedule.
+
+Examples:
+
+Day of week
+Start time
+End time
+Duration
+Effective start date
+Effective end date
+Active flag
+
+The design should support schedule changes while preserving historical records.
+
+Attendance / Session Tracking
+
+Instead of assuming every scheduled class occurred, every session should be recorded.
+
+For every session:
+
+Date
+Student
+Subject
+Scheduled time
+Actual time
+Status
+
+Status examples:
+
+Conducted
+Cancelled
+Student absent
+Teacher unavailable
+Holiday
+Makeup class
+
+Optional notes should be stored.
+
+This data becomes the basis for billing.
+
+Tuition Rates
+
+Rates are NOT fixed.
+
+Rates depend on:
+
+Grade
+Subject
+Individual agreement
+Discounts
+Special concessions
+
+Therefore:
+
+Do not hardcode rates.
+
+Create a flexible pricing model.
+
+Each student should have one or more pricing records with effective dates.
+
+Historical rates must never be overwritten.
+
+Examples:
+
+Jan–May: $45/session
+
+June onward: $50/session
+
+Special discount:
+
+$40/session
+
+Monthly Billing
+
+At month end:
+
+Generate invoices automatically.
+
+Invoice should include:
+
+Student(s)
+Sessions conducted
+Rate for each session
+Monthly subtotal
+Previous unpaid balance
+Payments received
+Current balance due
+Due date
+
+Invoices should be stored permanently.
+
+Invoices should be regeneratable if corrections are made before finalization.
+
+Payments
+
+Maintain payment history.
+
+Examples:
+
+Payment date
+
+Amount
+
+Payment method
+
+Reference number
+
+Check number
+
+Transaction ID
+
+Notes
+
+Support:
+
+Partial payments
+
+Overpayments
+
+Credits
+
+Outstanding balances
+
+Payments should automatically reduce invoice balances.
+
+Parent Communication
+
+Generate professional monthly invoices.
+
+Invoices should be emailed automatically.
+
+Email should include:
+
+Summary
+
+Attached PDF invoice
+
+Outstanding balance
+
+Payment instructions
+
+Future enhancement:
+
+Reminder emails
+
+Late payment reminders
+
+Automatic follow-up emails
+
+Authentication
+
+There are two user roles.
+
+Admin
+
+Full access.
+
+Can:
+
+Manage parents
+
+Manage students
+
+Manage schedules
+
+Record attendance
+
+Generate invoices
+
+Record payments
+
+View reports
+
+Edit everything
+
+Delete where appropriate
+
+Manage users
+
+Parent
+
+Can only:
+
+View own students
+
+View schedules
+
+View attendance
+
+View invoices
+
+View payment history
+
+View balances
+
+Download invoices
+
+Cannot modify data.
+
+Backend Technology
+
+Use:
+
+Java 21
+
+Spring Boot
+
+Spring Security
+
+Spring Data JPA
+
+Hibernate
+
+PostgreSQL
+
+Maven
+
+JWT authentication
+
+REST APIs
+
+Bean Validation
+
+Flyway for database migrations
+
+Lombok where appropriate
+
+Global exception handling
+
+DTO pattern
+
+OpenAPI / Swagger documentation
+
+Follow clean architecture and best practices.
+
+Database
+
+Design a normalized PostgreSQL schema.
+
+Provide:
+
+ER diagram
+
+Tables
+
+Relationships
+
+Indexes
+
+Constraints
+
+Primary keys
+
+Foreign keys
+
+Unique constraints
+
+Audit columns
+
+(created_at, updated_at, created_by, updated_by)
+
+Soft delete support where appropriate.
+
+Generate:
+
+Complete CREATE TABLE scripts.
+
+Frontend
+
+Technology:
+
+React
+
+TypeScript
+
+Vite
+
+Responsive design
+
+Modern professional UI
+
+Material UI preferred.
+
+Provide:
+
+Landing page
+
+Admin login
+
+Parent login
+
+Dashboard
+
+Student management
+
+Parent management
+
+Schedule management
+
+Attendance entry
+
+Invoice management
+
+Payment entry
+
+Reports
+
+Settings
+
+Dark mode
+
+Light mode
+
+User preferences
+
+Search
+
+Filtering
+
+Pagination
+
+Responsive layouts
+
+Reusable components
+
+Reporting
+
+Provide dashboards for:
+
+Total students
+
+Students by grade
+
+Students by subject
+
+Weekly schedule
+
+Daily schedule
+
+Upcoming classes
+
+Attendance summary
+
+Monthly revenue
+
+Outstanding dues
+
+Collected payments
+
+Pending invoices
+
+Parents with overdue balances
+
+Export reports to PDF and Excel.
+
+Future Enhancements
+
+Design the architecture so these can be added later without major redesign:
+
+Online payments (Stripe, PayPal)
+
+SMS reminders
+
+Calendar synchronization
+
+Google Calendar integration
+
+Zoom integration
+
+Automatic recurring invoices
+
+Teacher notes
+
+Homework tracking
+
+Student progress reports
+
+Document uploads
+
+Multiple teachers
+
+Multiple tutoring locations
+
+Online class support
+
+AI-generated student performance summaries
+
+Deliverables
+
+Implement the project incrementally.
+
+Start with:
+
+Overall system architecture
+Complete PostgreSQL database design
+ER diagram
+SQL schema
+Spring Boot project
+JPA entities
+Repositories
+Services
+REST Controllers
+Spring Security with JWT
+Database migrations
+Sample seed data
+React frontend
+Authentication
+Admin dashboard
+Parent portal
+Attendance module
+Billing module
+Payment module
+Email generation
+PDF invoice generation
+Docker configuration
+Docker Compose
+Production deployment guide
+
+Generate clean, production-ready code with appropriate comments, unit tests where applicable, and follow modern software engineering best practices.

@@ -1,0 +1,21 @@
+# Java / Maven build files
+backend/target/
+backend/.mvn/
+backend/*.jar
+
+# Node / Vite build files
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.production.local
+
+# IDE / OS specific files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local tools and logs
+apache-maven-*/
+*.log
