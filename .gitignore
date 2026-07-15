@@ -1,5 +1,6 @@
-# Java / Maven build files
+# Java / Maven / Gradle build files
 backend/target/
+backend/build/
 backend/.mvn/
 backend/*.jar
 
