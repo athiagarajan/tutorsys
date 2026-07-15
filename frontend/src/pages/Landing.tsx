@@ -48,7 +48,7 @@ export default function Landing() {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton onClick={colorMode.toggleColorMode} color="inherit">
+          <IconButton onClick={colorMode.toggleColorMode} color="inherit" aria-label="Toggle Theme">
             {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
           </IconButton>
           <Button variant="outlined" color="primary" onClick={() => navigate('/login')}>
