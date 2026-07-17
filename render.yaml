@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: tutorsys-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://pg-2ff57b18-alagesan-0eb8.b.aivencloud.com:15331/tutorsys?sslmode=require
+      - key: SPRING_DATASOURCE_USERNAME
+        value: avnadmin
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: INVOICES_DIR
+        value: ./invoices
