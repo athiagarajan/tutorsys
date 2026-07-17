@@ -19,8 +19,9 @@ services:
       - key: INVOICES_DIR
         value: ./invoices
 
-  - type: static
+  - type: web
     name: tutorsys-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm run build
     staticPublishPath: ./dist
