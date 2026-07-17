@@ -21,11 +21,14 @@ services:
 
   - type: static
     name: tutorsys-frontend
-    env: static
     rootDir: frontend
     buildCommand: npm run build
-    publishDir: dist
+    staticPublishPath: ./dist
     plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
         value: https://tutorsys-backend.onrender.com/api
