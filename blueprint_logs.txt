@@ -1,0 +1,31 @@
+2026-07-17T02:27:20.44960046Z ==> Cloning from https://github.com/athiagarajan/tutorsys
+2026-07-17T02:27:21.161138219Z ==> Checking out commit 92443faab496f07d4eab4e267dcf716dbf7752f2 in branch main
+2026-07-17T02:27:22.567590066Z ==> Installing dependencies with npm...
+2026-07-17T02:27:22.734148772Z ==> Using Node.js version 24.14.1 (default)
+2026-07-17T02:27:22.734161342Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-07-17T02:27:39.216509376Z 
+2026-07-17T02:27:39.216549418Z added 222 packages, and audited 223 packages in 16s
+2026-07-17T02:27:39.216608669Z 
+2026-07-17T02:27:39.216769154Z 49 packages are looking for funding
+2026-07-17T02:27:39.216883808Z   run `npm fund` for details
+2026-07-17T02:27:39.218732593Z 
+2026-07-17T02:27:39.218744974Z found 0 vulnerabilities
+2026-07-17T02:27:40.427331612Z 
+2026-07-17T02:27:40.427374043Z up to date, audited 223 packages in 915ms
+2026-07-17T02:27:40.427379353Z 
+2026-07-17T02:27:40.427555158Z 49 packages are looking for funding
+2026-07-17T02:27:40.427691372Z   run `npm fund` for details
+2026-07-17T02:27:40.429443285Z 
+2026-07-17T02:27:40.429475956Z found 0 vulnerabilities
+2026-07-17T02:27:40.57236147Z ==> Running build command 'npm run build'...
+2026-07-17T02:27:40.809875533Z 
+2026-07-17T02:27:40.809906933Z > frontend@0.0.0 build
+2026-07-17T02:27:40.809912634Z > tsc -b && vite build
+2026-07-17T02:27:40.809917654Z 
+2026-07-17T02:27:46.279008362Z src/pages/Landing.test.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+2026-07-17T02:27:46.279249409Z src/pages/Login.test.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+2026-07-17T02:27:47.022979208Z vite.config.ts(8,3): error TS2769: No overload matches this call.
+2026-07-17T02:27:47.023005538Z   The last overload gave the following error.
+2026-07-17T02:27:47.023012209Z     Object literal may only specify known properties, and 'test' does not exist in type 'UserConfigExport'.
+2026-07-17T02:27:47.198222085Z ==> Build failed 😞
+2026-07-17T02:27:47.198245726Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
