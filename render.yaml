@@ -18,3 +18,14 @@ services:
         value: prod
       - key: INVOICES_DIR
         value: ./invoices
+
+  - type: static
+    name: tutorsys-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm run build
+    publishDir: dist
+    plan: free
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://tutorsys-backend.onrender.com/api
