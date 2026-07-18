@@ -13,6 +13,10 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
+                .info(new io.swagger.v3.oas.models.info.Info()
+                        .title("TutorSys Management API")
+                        .version("1.0.0")
+                        .description("REST API specifications for the TutorSys platform, managing student tutoring calendars, session logs, automatic billing invoice engines, client payment collections, and reporting exports."))
                 .addSecurityItem(new SecurityRequirement().addList("BearerAuthentication"))
                 .components(new Components()
                         .addSecuritySchemes("BearerAuthentication", new SecurityScheme()
