@@ -11,6 +11,16 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import api from '../api';
 
+const getLastSixMonthsDateString = () => {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 6);
+  return d.toISOString().split('T')[0];
+};
+
+const getTodayDateString = () => {
+  return new Date().toISOString().split('T')[0];
+};
+
 export default function ParentDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
@@ -24,8 +34,8 @@ export default function ParentDashboard() {
   // Session Filtering & Sorting states
   const [sessionStudentFilter, setSessionStudentFilter] = useState('');
   const [sessionStatusFilter, setSessionStatusFilter] = useState('ALL');
-  const [sessionStartFilter, setSessionStartFilter] = useState('');
-  const [sessionEndFilter, setSessionEndFilter] = useState('');
+  const [sessionStartFilter, setSessionStartFilter] = useState(getLastSixMonthsDateString());
+  const [sessionEndFilter, setSessionEndFilter] = useState(getTodayDateString());
   const [sessionOrderBy, setSessionOrderBy] = useState<'sessionDate' | 'studentName' | 'subjectName'>('sessionDate');
   const [sessionOrderDir, setSessionOrderDir] = useState<'asc' | 'desc'>('desc');
 
@@ -351,8 +361,8 @@ export default function ParentDashboard() {
                     onClick={() => {
                       setSessionStudentFilter('');
                       setSessionStatusFilter('ALL');
-                      setSessionStartFilter('');
-                      setSessionEndFilter('');
+                      setSessionStartFilter(getLastSixMonthsDateString());
+                      setSessionEndFilter(getTodayDateString());
                     }}
                   >
                     Clear Filters

@@ -30,6 +30,15 @@ interface DashboardStats {
     dueDate: string;
   }>;
 }
+const getLastSixMonthsDateString = () => {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 6);
+  return d.toISOString().split('T')[0];
+};
+
+const getTodayDateString = () => {
+  return new Date().toISOString().split('T')[0];
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -46,8 +55,8 @@ export default function AdminDashboard() {
   // Session Filtering & Sorting states
   const [sessionStudentFilter, setSessionStudentFilter] = useState('');
   const [sessionStatusFilter, setSessionStatusFilter] = useState('ALL');
-  const [sessionStartFilter, setSessionStartFilter] = useState('');
-  const [sessionEndFilter, setSessionEndFilter] = useState('');
+  const [sessionStartFilter, setSessionStartFilter] = useState(getLastSixMonthsDateString());
+  const [sessionEndFilter, setSessionEndFilter] = useState(getTodayDateString());
   const [sessionOrderBy, setSessionOrderBy] = useState<'sessionDate' | 'studentName' | 'subjectName'>('sessionDate');
   const [sessionOrderDir, setSessionOrderDir] = useState<'asc' | 'desc'>('desc');
 
@@ -761,8 +770,8 @@ export default function AdminDashboard() {
                 onClick={() => {
                   setSessionStudentFilter('');
                   setSessionStatusFilter('ALL');
-                  setSessionStartFilter('');
-                  setSessionEndFilter('');
+                  setSessionStartFilter(getLastSixMonthsDateString());
+                  setSessionEndFilter(getTodayDateString());
                 }}
               >
                 Clear Filters
