@@ -743,6 +743,7 @@ export default function AdminDashboard() {
                 size="small"
                 value={sessionStartFilter}
                 onChange={(e) => setSessionStartFilter(e.target.value)}
+                {...({ InputLabelProps: { shrink: true } } as any)}
               />
               <TextField
                 label="End Date"
@@ -750,6 +751,7 @@ export default function AdminDashboard() {
                 size="small"
                 value={sessionEndFilter}
                 onChange={(e) => setSessionEndFilter(e.target.value)}
+                {...({ InputLabelProps: { shrink: true } } as any)}
               />
               <Button
                 variant="outlined"
