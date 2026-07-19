@@ -305,7 +305,7 @@ export default function ParentDashboard() {
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>Attendance & Completed Lessons History</Typography>
 
                 {/* Filtering Controls */}
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1, boxShadow: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1, boxShadow: 1, alignItems: 'flex-end' }}>
                   <TextField
                     label="Filter by Student"
                     size="small"
@@ -329,22 +329,31 @@ export default function ParentDashboard() {
                       <MenuItem value="MAKEUP">Makeup</MenuItem>
                     </Select>
                   </FormControl>
-                  <TextField
-                    label="Start Date"
-                    type="date"
-                    size="small"
-                    value={sessionStartFilter}
-                    onChange={(e) => setSessionStartFilter(e.target.value)}
-                    {...({ InputLabelProps: { shrink: true } } as any)}
-                  />
-                  <TextField
-                    label="End Date"
-                    type="date"
-                    size="small"
-                    value={sessionEndFilter}
-                    onChange={(e) => setSessionEndFilter(e.target.value)}
-                    {...({ InputLabelProps: { shrink: true } } as any)}
-                  />
+
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'text.secondary', mb: 0.5 }}>
+                      Start Date
+                    </Typography>
+                    <TextField
+                      type="date"
+                      size="small"
+                      value={sessionStartFilter}
+                      onChange={(e) => setSessionStartFilter(e.target.value)}
+                    />
+                  </Box>
+
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'text.secondary', mb: 0.5 }}>
+                      End Date
+                    </Typography>
+                    <TextField
+                      type="date"
+                      size="small"
+                      value={sessionEndFilter}
+                      onChange={(e) => setSessionEndFilter(e.target.value)}
+                    />
+                  </Box>
+
                   <Button
                     variant="outlined"
                     size="small"
