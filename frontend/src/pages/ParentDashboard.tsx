@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Container, Typography, Card, CardContent, Button, Tabs, Tab,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  CircularProgress, Alert, Chip, Divider, IconButton
+  CircularProgress, Alert, Chip, Divider, IconButton, TableSortLabel,
+  TextField, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -19,6 +20,84 @@ export default function ParentDashboard() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+
+  // Session Filtering & Sorting states
+  const [sessionStudentFilter, setSessionStudentFilter] = useState('');
+  const [sessionStatusFilter, setSessionStatusFilter] = useState('ALL');
+  const [sessionStartFilter, setSessionStartFilter] = useState('');
+  const [sessionEndFilter, setSessionEndFilter] = useState('');
+  const [sessionOrderBy, setSessionOrderBy] = useState<'sessionDate' | 'studentName' | 'subjectName'>('sessionDate');
+  const [sessionOrderDir, setSessionOrderDir] = useState<'asc' | 'desc'>('desc');
+
+  const formatSessionTimeRange = (startTimeStr: string | null, durationMinutes: number) => {
+    if (!startTimeStr) return '—';
+    const parts = startTimeStr.split(':');
+    if (parts.length < 2) return startTimeStr;
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    
+    const startDate = new Date();
+    startDate.setHours(hours, minutes, 0, 0);
+    
+    const endDate = new Date(startDate.getTime() + (durationMinutes || 60) * 60 * 1000);
+    
+    const formatTime = (d: Date) => {
+      let hh = d.getHours();
+      let mm = d.getMinutes();
+      const ampm = hh >= 12 ? 'PM' : 'AM';
+      hh = hh % 12;
+      hh = hh ? hh : 12;
+      const mmStr = mm < 10 ? '0' + mm : mm;
+      return `${hh}:${mmStr} ${ampm}`;
+    };
+    
+    return `${formatTime(startDate)} - ${formatTime(endDate)}`;
+  };
+
+  const handleSessionSort = (property: 'sessionDate' | 'studentName' | 'subjectName') => {
+    const isAsc = sessionOrderBy === property && sessionOrderDir === 'asc';
+    setSessionOrderDir(isAsc ? 'desc' : 'asc');
+    setSessionOrderBy(property);
+  };
+
+  const filteredAndSortedSessions = useMemo(() => {
+    let result = [...sessions];
+
+    if (sessionStudentFilter.trim() !== '') {
+      result = result.filter(s => 
+        s.studentName && s.studentName.toLowerCase().includes(sessionStudentFilter.toLowerCase())
+      );
+    }
+
+    if (sessionStatusFilter !== 'ALL') {
+      result = result.filter(s => s.status === sessionStatusFilter);
+    }
+
+    if (sessionStartFilter) {
+      result = result.filter(s => s.sessionDate >= sessionStartFilter);
+    }
+
+    if (sessionEndFilter) {
+      result = result.filter(s => s.sessionDate <= sessionEndFilter);
+    }
+
+    result.sort((a, b) => {
+      let valA = a[sessionOrderBy] || '';
+      let valB = b[sessionOrderBy] || '';
+
+      if (typeof valA === 'string') {
+        return sessionOrderDir === 'asc'
+          ? valA.localeCompare(valB)
+          : valB.localeCompare(valA);
+      } else {
+        return sessionOrderDir === 'asc'
+          ? (valA > valB ? 1 : -1)
+          : (valA < valB ? 1 : -1);
+      }
+    });
+
+    return result;
+  }, [sessions, sessionStudentFilter, sessionStatusFilter, sessionStartFilter, sessionEndFilter, sessionOrderBy, sessionOrderDir]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -224,25 +303,108 @@ export default function ParentDashboard() {
             {activeTab === 2 && (
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>Attendance & Completed Lessons History</Typography>
+
+                {/* Filtering Controls */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1, boxShadow: 1 }}>
+                  <TextField
+                    label="Filter by Student"
+                    size="small"
+                    value={sessionStudentFilter}
+                    onChange={(e) => setSessionStudentFilter(e.target.value)}
+                    sx={{ minWidth: 200 }}
+                  />
+                  <FormControl size="small" sx={{ minWidth: 150 }}>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      value={sessionStatusFilter}
+                      onChange={(e) => setSessionStatusFilter(e.target.value)}
+                      label="Status"
+                    >
+                      <MenuItem value="ALL">All Statuses</MenuItem>
+                      <MenuItem value="CONDUCTED">Conducted</MenuItem>
+                      <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                      <MenuItem value="ABSENT_STUDENT">Absent (Student)</MenuItem>
+                      <MenuItem value="ABSENT_TEACHER">Absent (Teacher)</MenuItem>
+                      <MenuItem value="HOLIDAY">Holiday</MenuItem>
+                      <MenuItem value="MAKEUP">Makeup</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    label="Start Date"
+                    type="date"
+                    size="small"
+                    value={sessionStartFilter}
+                    onChange={(e) => setSessionStartFilter(e.target.value)}
+                  />
+                  <TextField
+                    label="End Date"
+                    type="date"
+                    size="small"
+                    value={sessionEndFilter}
+                    onChange={(e) => setSessionEndFilter(e.target.value)}
+                  />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setSessionStudentFilter('');
+                      setSessionStatusFilter('ALL');
+                      setSessionStartFilter('');
+                      setSessionEndFilter('');
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                </Box>
+
                 <TableContainer component={Paper}>
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Student Name</TableCell>
-                        <TableCell>Subject</TableCell>
+                        <TableCell>
+                          <TableSortLabel
+                            active={sessionOrderBy === 'sessionDate'}
+                            direction={sessionOrderBy === 'sessionDate' ? sessionOrderDir : 'asc'}
+                            onClick={() => handleSessionSort('sessionDate')}
+                          >
+                            Date
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell>
+                          <TableSortLabel
+                            active={sessionOrderBy === 'studentName'}
+                            direction={sessionOrderBy === 'studentName' ? sessionOrderDir : 'asc'}
+                            onClick={() => handleSessionSort('studentName')}
+                          >
+                            Student Name
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell>
+                          <TableSortLabel
+                            active={sessionOrderBy === 'subjectName'}
+                            direction={sessionOrderBy === 'subjectName' ? sessionOrderDir : 'asc'}
+                            onClick={() => handleSessionSort('subjectName')}
+                          >
+                            Subject
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell>Time Range</TableCell>
                         <TableCell>Status</TableCell>
-                        <TableCell>Duration</TableCell>
                         <TableCell>Notes</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {sessions.length > 0 ? (
-                        sessions.map((sess) => (
+                      {filteredAndSortedSessions.length > 0 ? (
+                        filteredAndSortedSessions.map((sess) => (
                           <TableRow key={sess.id}>
                             <TableCell>{sess.sessionDate}</TableCell>
                             <TableCell sx={{ fontWeight: 600 }}>{sess.studentName}</TableCell>
                             <TableCell>{sess.subjectName}</TableCell>
+                            <TableCell>
+                              {sess.status === 'CONDUCTED' 
+                                ? formatSessionTimeRange(sess.actualStartTime, sess.actualDurationMinutes) 
+                                : formatSessionTimeRange(sess.scheduledStartTime, 60)}
+                            </TableCell>
                             <TableCell>
                               <Chip
                                 label={sess.status}
@@ -250,13 +412,12 @@ export default function ParentDashboard() {
                                 color={sess.status === 'CONDUCTED' ? 'success' : sess.status === 'CANCELLED' ? 'error' : 'warning'}
                               />
                             </TableCell>
-                            <TableCell>{sess.actualDurationMinutes || 60} mins</TableCell>
                             <TableCell>{sess.notes}</TableCell>
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={6} align="center">No sessions recorded yet.</TableCell>
+                          <TableCell colSpan={6} align="center">No sessions match the filter criteria.</TableCell>
                         </TableRow>
                       )}
                     </TableBody>
