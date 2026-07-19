@@ -29,12 +29,34 @@ const mockStats = {
   studentsBySubject: { 'Math': 5 }
 };
 
-const mockStudents = [{ id: 1, name: 'Alice Smith', grade: 'Grade 10', parentId: 2, parentName: 'Bob Smith' }];
+const mockStudents = [
+  { 
+    id: 1, 
+    firstName: 'Alice', 
+    lastName: 'Smith', 
+    grade: 'Grade 10', 
+    parentId: 2, 
+    parentName: 'Bob Smith',
+    subjects: [{ id: 1, name: 'Math' }] 
+  },
+  {
+    id: 2,
+    firstName: 'Charlie',
+    lastName: 'Brown',
+    grade: 'Grade 9',
+    parentId: 2,
+    parentName: 'Bob Smith',
+    subjects: [{ id: 2, name: 'English' }]
+  }
+];
 const mockParents = [{ id: 2, name: 'Bob Smith', email: 'bob@example.com', phone: '123' }];
 const mockSchedules = [];
 const mockInvoices = [];
 const mockPayments = [];
-const mockSubjects = [{ id: 1, name: 'Math', description: 'Algebra' }];
+const mockSubjects = [
+  { id: 1, name: 'Math', description: 'Algebra' },
+  { id: 2, name: 'English', description: 'Literature' }
+];
 
 const mockSessions = [
   {
@@ -142,5 +164,25 @@ describe('AdminDashboard Component - Session Logs Filtering & Sorting', () => {
     // Charlie (CANCELLED) is present, Alice (CONDUCTED) is filtered out
     expect(screen.getByText('Charlie Brown')).toBeInTheDocument();
     expect(screen.queryByText('Alice Smith')).not.toBeInTheDocument();
+  });
+
+  it('filters subjects based on selected student in Record Session modal', async () => {
+    render(<AdminDashboard />);
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
+    await selectTab(4);
+
+    const recordBtn = screen.getByRole('button', { name: /record tutoring session/i });
+    fireEvent.click(recordBtn);
+
+    const comboboxes = screen.getAllByRole('combobox');
+    const studentSelect = comboboxes[0];
+    fireEvent.mouseDown(studentSelect);
+
+    const aliceOption = await screen.findByRole('option', { name: /alice smith/i });
+    fireEvent.click(aliceOption);
+
+    // The subject selector should display Math and be disabled since she has exactly 1 subject
+    const subjectSelect = screen.getAllByRole('combobox')[1];
+    expect(subjectSelect).toHaveAttribute('aria-disabled', 'true');
   });
 });

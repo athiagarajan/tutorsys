@@ -91,6 +91,7 @@ export default function AdminDashboard() {
     setSessionOrderBy(property);
   };
 
+
   const filteredAndSortedSessions = useMemo(() => {
     let result = [...sessions];
 
@@ -186,6 +187,50 @@ export default function AdminDashboard() {
     status: 'CONDUCTED',
     notes: '',
   });
+
+  const modalAvailableSubjects = useMemo(() => {
+    if (sessionForm.studentId) {
+      const student = students.find(s => String(s.id) === String(sessionForm.studentId));
+      return student ? (student.subjects || []) : [];
+    }
+    return subjects;
+  }, [sessionForm.studentId, students, subjects]);
+
+  const modalAvailableStudents = useMemo(() => {
+    if (sessionForm.subjectId) {
+      return students.filter(student => 
+        student.subjects?.some((sub: any) => String(sub.id) === String(sessionForm.subjectId))
+      );
+    }
+    return students;
+  }, [sessionForm.subjectId, students]);
+
+  const handleModalStudentChange = (studentId: string) => {
+    const student = students.find(s => String(s.id) === String(studentId));
+    const studentSubs = student ? (student.subjects || []) : [];
+    setSessionForm(prev => ({
+      ...prev,
+      studentId: studentId,
+      subjectId: studentSubs.length > 0 ? String(studentSubs[0].id) : ''
+    }));
+  };
+
+  const handleModalSubjectChange = (subjectId: string) => {
+    const currentStudent = students.find(s => String(s.id) === String(sessionForm.studentId));
+    const hasSubject = currentStudent?.subjects?.some((sub: any) => String(sub.id) === String(subjectId));
+    if (!sessionForm.studentId || !hasSubject) {
+      setSessionForm(prev => ({
+        ...prev,
+        studentId: '',
+        subjectId: subjectId
+      }));
+    } else {
+      setSessionForm(prev => ({
+        ...prev,
+        subjectId: subjectId
+      }));
+    }
+  };
 
   const [invoiceForm, setInvoiceForm] = useState({
     parentId: '',
@@ -1114,15 +1159,24 @@ export default function AdminDashboard() {
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2, width: 400 }}>
           <FormControl required>
             <InputLabel>Student</InputLabel>
-            <Select value={sessionForm.studentId} onChange={(e) => setSessionForm({ ...sessionForm, studentId: e.target.value })} label="Student">
-              {students.map(s => <MenuItem key={s.id} value={String(s.id)}>{s.firstName} {s.lastName}</MenuItem>)}
+            <Select 
+              value={sessionForm.studentId} 
+              onChange={(e) => handleModalStudentChange(e.target.value as string)} 
+              label="Student"
+            >
+              {modalAvailableStudents.map((s: any) => <MenuItem key={s.id} value={String(s.id)}>{s.firstName} {s.lastName}</MenuItem>)}
             </Select>
           </FormControl>
 
           <FormControl required>
             <InputLabel>Subject</InputLabel>
-            <Select value={sessionForm.subjectId} onChange={(e) => setSessionForm({ ...sessionForm, subjectId: e.target.value })} label="Subject">
-              {subjects.map(s => <MenuItem key={s.id} value={String(s.id)}>{s.name}</MenuItem>)}
+            <Select 
+              value={sessionForm.subjectId} 
+              onChange={(e) => handleModalSubjectChange(e.target.value as string)} 
+              label="Subject"
+              disabled={modalAvailableSubjects.length <= 1}
+            >
+              {modalAvailableSubjects.map((s: any) => <MenuItem key={s.id} value={String(s.id)}>{s.name}</MenuItem>)}
             </Select>
           </FormControl>
 
