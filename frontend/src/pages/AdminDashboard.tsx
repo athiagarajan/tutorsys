@@ -713,7 +713,7 @@ export default function AdminDashboard() {
             </Box>
 
             {/* Filtering Controls */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1, boxShadow: 1, alignItems: 'flex-end' }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1, boxShadow: 1 }}>
               <TextField
                 label="Filter by Student"
                 size="small"
@@ -738,29 +738,22 @@ export default function AdminDashboard() {
                 </Select>
               </FormControl>
               
-              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'text.secondary', mb: 0.5 }}>
-                  Start Date
-                </Typography>
-                <TextField
-                  type="date"
-                  size="small"
-                  value={sessionStartFilter}
-                  onChange={(e) => setSessionStartFilter(e.target.value)}
-                />
-              </Box>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'text.secondary', mb: 0.5 }}>
-                  End Date
-                </Typography>
-                <TextField
-                  type="date"
-                  size="small"
-                  value={sessionEndFilter}
-                  onChange={(e) => setSessionEndFilter(e.target.value)}
-                />
-              </Box>
+              <TextField
+                label="Start Date"
+                type="date"
+                size="small"
+                value={sessionStartFilter}
+                onChange={(e) => setSessionStartFilter(e.target.value)}
+                {...({ InputLabelProps: { shrink: true } } as any)}
+              />
+              <TextField
+                label="End Date"
+                type="date"
+                size="small"
+                value={sessionEndFilter}
+                onChange={(e) => setSessionEndFilter(e.target.value)}
+                {...({ InputLabelProps: { shrink: true } } as any)}
+              />
 
               <Button
                 variant="outlined"
