@@ -433,7 +433,7 @@ export default function AdminDashboard() {
   // Attendance/Session Actions
   const handleSaveSession = async () => {
     try {
-      await api.post('/sessions', {
+      const res = await api.post('/sessions', {
         studentId: Number(sessionForm.studentId),
         subjectId: Number(sessionForm.subjectId),
         sessionDate: sessionForm.sessionDate,
@@ -443,7 +443,8 @@ export default function AdminDashboard() {
         status: sessionForm.status,
         notes: sessionForm.notes,
       });
-      setSuccess('Attendance logged successfully!');
+      const note = res.data.notificationMessage;
+      setSuccess(note ? `Attendance logged! Note: ${note}` : 'Attendance logged successfully!');
       setOpenSessionModal(false);
       fetchData();
     } catch (err: any) {
@@ -888,7 +889,7 @@ export default function AdminDashboard() {
                         <TableCell sx={{ fontWeight: 600 }}>{sess.studentName}</TableCell>
                         <TableCell>{sess.subjectName}</TableCell>
                         <TableCell>
-                          {sess.status === 'CONDUCTED' 
+                          {['CONDUCTED', 'MAKEUP'].includes(sess.status)
                             ? formatSessionTimeRange(sess.actualStartTime, sess.actualDurationMinutes) 
                             : formatSessionTimeRange(sess.scheduledStartTime, 60)}
                         </TableCell>
@@ -896,7 +897,7 @@ export default function AdminDashboard() {
                           <Chip
                             label={sess.status}
                             size="small"
-                            color={sess.status === 'CONDUCTED' ? 'success' : sess.status === 'CANCELLED' ? 'error' : 'warning'}
+                            color={['CONDUCTED', 'MAKEUP'].includes(sess.status) ? 'success' : sess.status === 'CANCELLED' ? 'error' : 'warning'}
                           />
                         </TableCell>
                         <TableCell>${sess.rateCharged ?? '0.00'}</TableCell>

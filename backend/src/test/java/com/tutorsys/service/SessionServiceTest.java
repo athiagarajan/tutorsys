@@ -86,7 +86,7 @@ public class SessionServiceTest {
 
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
         when(subjectRepository.findById(2L)).thenReturn(Optional.of(subject));
-        when(sessionRepository.findByStudentIdAndSessionDateAndStatusAndDeletedFalse(1L, LocalDate.of(2026, 7, 20), "CONDUCTED"))
+        when(sessionRepository.findConductedAndMakeupSessionsByStudentAndDate(1L, LocalDate.of(2026, 7, 20)))
                 .thenReturn(Collections.singletonList(existingSession));
         when(studentService.getStudentRateForSession(any(), any(), any())).thenReturn(new BigDecimal("50.00"));
         when(sessionRepository.save(any(Session.class))).thenAnswer(invocation -> {
@@ -98,11 +98,12 @@ public class SessionServiceTest {
         SessionDto result = sessionService.createSession(dto);
         assertNotNull(result);
         assertEquals(11L, result.getId());
+        assertNull(result.getNotificationMessage());
         verify(sessionRepository, times(1)).save(any(Session.class));
     }
 
     @Test
-    void testCreateSession_OverlapThrowsException() {
+    void testCreateSession_OverlapReplacesConductedSession() {
         SessionDto dto = new SessionDto();
         dto.setStudentId(1L);
         dto.setSubjectId(2L);
@@ -113,15 +114,24 @@ public class SessionServiceTest {
 
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
         when(subjectRepository.findById(2L)).thenReturn(Optional.of(subject));
-        when(sessionRepository.findByStudentIdAndSessionDateAndStatusAndDeletedFalse(1L, LocalDate.of(2026, 7, 20), "CONDUCTED"))
+        when(sessionRepository.findConductedAndMakeupSessionsByStudentAndDate(1L, LocalDate.of(2026, 7, 20)))
                 .thenReturn(Collections.singletonList(existingSession));
-
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            sessionService.createSession(dto);
+        when(studentService.getStudentRateForSession(any(), any(), any())).thenReturn(new BigDecimal("50.00"));
+        when(sessionRepository.save(any(Session.class))).thenAnswer(invocation -> {
+            Session s = invocation.getArgument(0);
+            if (s.getId() == null) {
+                s.setId(11L);
+            }
+            return s;
         });
 
-        assertTrue(exception.getReason().contains("Student already has an overlapping CONDUCTED tutoring session"));
-        verify(sessionRepository, never()).save(any(Session.class));
+        SessionDto result = sessionService.createSession(dto);
+        assertNotNull(result);
+        assertEquals(11L, result.getId());
+        assertNotNull(result.getNotificationMessage());
+        assertTrue(result.getNotificationMessage().contains("replaced"));
+        assertTrue(existingSession.isDeleted());
+        verify(sessionRepository, atLeast(2)).save(any(Session.class)); // Once to delete the old, once to save the new
     }
 
     @Test
@@ -135,7 +145,7 @@ public class SessionServiceTest {
         dto.setStatus("CONDUCTED");
 
         when(sessionRepository.findById(10L)).thenReturn(Optional.of(existingSession));
-        when(sessionRepository.findByStudentIdAndSessionDateAndStatusAndDeletedFalse(1L, LocalDate.of(2026, 7, 20), "CONDUCTED"))
+        when(sessionRepository.findConductedAndMakeupSessionsByStudentAndDate(1L, LocalDate.of(2026, 7, 20)))
                 .thenReturn(Collections.singletonList(existingSession));
         when(studentService.getStudentRateForSession(any(), any(), any())).thenReturn(new BigDecimal("50.00"));
         when(sessionRepository.save(any(Session.class))).thenReturn(existingSession);

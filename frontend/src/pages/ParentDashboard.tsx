@@ -414,7 +414,7 @@ export default function ParentDashboard() {
                             <TableCell sx={{ fontWeight: 600 }}>{sess.studentName}</TableCell>
                             <TableCell>{sess.subjectName}</TableCell>
                             <TableCell>
-                              {sess.status === 'CONDUCTED' 
+                              {['CONDUCTED', 'MAKEUP'].includes(sess.status)
                                 ? formatSessionTimeRange(sess.actualStartTime, sess.actualDurationMinutes) 
                                 : formatSessionTimeRange(sess.scheduledStartTime, 60)}
                             </TableCell>
@@ -422,7 +422,7 @@ export default function ParentDashboard() {
                               <Chip
                                 label={sess.status}
                                 size="small"
-                                color={sess.status === 'CONDUCTED' ? 'success' : sess.status === 'CANCELLED' ? 'error' : 'warning'}
+                                color={['CONDUCTED', 'MAKEUP'].includes(sess.status) ? 'success' : sess.status === 'CANCELLED' ? 'error' : 'warning'}
                               />
                             </TableCell>
                             <TableCell>{sess.notes}</TableCell>

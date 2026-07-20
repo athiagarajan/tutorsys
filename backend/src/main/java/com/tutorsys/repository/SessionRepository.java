@@ -35,10 +35,9 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
 
     List<Session> findByInvoiceIdAndDeletedFalse(Long invoiceId);
 
-    @Query("SELECT s FROM Session s WHERE s.student.id = :studentId AND s.sessionDate = :sessionDate AND s.status = :status AND s.deleted = false")
-    List<Session> findByStudentIdAndSessionDateAndStatusAndDeletedFalse(
+    @Query("SELECT s FROM Session s WHERE s.student.id = :studentId AND s.sessionDate = :sessionDate AND s.status IN ('CONDUCTED', 'MAKEUP') AND s.deleted = false")
+    List<Session> findConductedAndMakeupSessionsByStudentAndDate(
             @Param("studentId") Long studentId,
-            @Param("sessionDate") LocalDate sessionDate,
-            @Param("status") String status
+            @Param("sessionDate") LocalDate sessionDate
     );
 }

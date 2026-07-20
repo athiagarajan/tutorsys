@@ -67,21 +67,17 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
-    private void validateNoSessionOverlap(Long studentId, LocalDate sessionDate, LocalTime startTime, Integer durationMinutes, Long excludeSessionId) {
+    private String handleOverlapReplacement(Long studentId, LocalDate sessionDate, LocalTime startTime, Integer durationMinutes, Long excludeSessionId) {
         if (startTime == null || durationMinutes == null || studentId == null || sessionDate == null) {
-            return;
+            return null;
         }
 
-        // Find existing conducted sessions for this student on the same date
-        List<Session> existingConducted = sessionRepository.findByStudentIdAndSessionDateAndStatusAndDeletedFalse(
-                studentId, sessionDate, "CONDUCTED"
-        );
-
+        List<Session> existingConducted = sessionRepository.findConductedAndMakeupSessionsByStudentAndDate(studentId, sessionDate);
         LocalTime newStart = startTime;
         LocalTime newEnd = startTime.plusMinutes(durationMinutes);
+        StringBuilder notification = new StringBuilder();
 
         for (Session existing : existingConducted) {
-            // Exclude the session currently being updated
             if (excludeSessionId != null && existing.getId().equals(excludeSessionId)) {
                 continue;
             }
@@ -91,12 +87,42 @@ public class SessionService {
 
             // Check for overlap: newStart < extEnd && extStart < newEnd
             if (newStart.isBefore(extEnd) && extStart.isBefore(newEnd)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(
-                        "Student already has an overlapping CONDUCTED tutoring session on this date from %s to %s.",
-                        extStart, extEnd
-                ));
+                String invoiceInfo = "";
+                if (existing.getInvoice() != null) {
+                    Invoice invoice = existing.getInvoice();
+                    invoiceInfo = " (associated with invoice " + invoice.getInvoiceNumber() + ")";
+                    
+                    // Disassociate all other sessions linked to this invoice
+                    List<Session> linkedSessions = sessionRepository.findByInvoiceIdAndDeletedFalse(invoice.getId());
+                    for (Session s : linkedSessions) {
+                        s.setInvoice(null);
+                        sessionRepository.save(s);
+                    }
+                    
+                    // Delete invoice PDF file if exists
+                    if (invoice.getPdfFilePath() != null) {
+                        try {
+                            new java.io.File(invoice.getPdfFilePath()).delete();
+                        } catch (Exception e) {
+                            // Ignore
+                        }
+                    }
+                    
+                    // Delete invoice itself
+                    invoiceRepository.delete(invoice);
+                }
+
+                existing.setDeleted(true);
+                sessionRepository.save(existing);
+
+                if (notification.length() > 0) {
+                    notification.append("; ");
+                }
+                notification.append(String.format("Overlapping session from %s to %s%s was replaced", extStart, extEnd, invoiceInfo));
             }
         }
+
+        return notification.length() > 0 ? notification.toString() : null;
     }
 
     @Transactional
@@ -110,8 +136,9 @@ public class SessionService {
         Integer duration = dto.getActualDurationMinutes() != null ? dto.getActualDurationMinutes() : 60;
         String status = dto.getStatus().toUpperCase();
 
-        if ("CONDUCTED".equals(status)) {
-            validateNoSessionOverlap(dto.getStudentId(), dto.getSessionDate(), actualStart, duration, null);
+        String notificationMsg = null;
+        if ("CONDUCTED".equals(status) || "MAKEUP".equals(status)) {
+            notificationMsg = handleOverlapReplacement(dto.getStudentId(), dto.getSessionDate(), actualStart, duration, null);
         }
 
         Session session = new Session();
@@ -129,7 +156,9 @@ public class SessionService {
         session.setRateCharged(rate);
 
         session = sessionRepository.save(session);
-        return convertToDto(session);
+        SessionDto responseDto = convertToDto(session);
+        responseDto.setNotificationMessage(notificationMsg);
+        return responseDto;
     }
 
     @Transactional
@@ -142,8 +171,9 @@ public class SessionService {
         String status = dto.getStatus() != null ? dto.getStatus().toUpperCase() : session.getStatus();
         LocalDate date = dto.getSessionDate() != null ? dto.getSessionDate() : session.getSessionDate();
 
-        if ("CONDUCTED".equals(status)) {
-            validateNoSessionOverlap(session.getStudent().getId(), date, actualStart, duration, id);
+        String notificationMsg = null;
+        if ("CONDUCTED".equals(status) || "MAKEUP".equals(status)) {
+            notificationMsg = handleOverlapReplacement(session.getStudent().getId(), date, actualStart, duration, id);
         }
 
         session.setSessionDate(date);
@@ -161,7 +191,9 @@ public class SessionService {
         }
 
         session = sessionRepository.save(session);
-        return convertToDto(session);
+        SessionDto responseDto = convertToDto(session);
+        responseDto.setNotificationMessage(notificationMsg);
+        return responseDto;
     }
 
     @Transactional

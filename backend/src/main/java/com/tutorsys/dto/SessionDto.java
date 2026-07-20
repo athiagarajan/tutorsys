@@ -23,4 +23,5 @@ public class SessionDto {
     private Long invoiceId;
     private String invoiceNumber;
     private String notes;
+    private String notificationMessage;
 }
