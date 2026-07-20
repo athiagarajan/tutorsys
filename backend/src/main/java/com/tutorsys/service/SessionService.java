@@ -7,11 +7,14 @@ import com.tutorsys.entity.Subject;
 import com.tutorsys.repository.SessionRepository;
 import com.tutorsys.repository.StudentRepository;
 import com.tutorsys.repository.SubjectRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,6 +62,38 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
+    private void validateNoSessionOverlap(Long studentId, LocalDate sessionDate, LocalTime startTime, Integer durationMinutes, Long excludeSessionId) {
+        if (startTime == null || durationMinutes == null || studentId == null || sessionDate == null) {
+            return;
+        }
+
+        // Find existing conducted sessions for this student on the same date
+        List<Session> existingConducted = sessionRepository.findByStudentIdAndSessionDateAndStatusAndDeletedFalse(
+                studentId, sessionDate, "CONDUCTED"
+        );
+
+        LocalTime newStart = startTime;
+        LocalTime newEnd = startTime.plusMinutes(durationMinutes);
+
+        for (Session existing : existingConducted) {
+            // Exclude the session currently being updated
+            if (excludeSessionId != null && existing.getId().equals(excludeSessionId)) {
+                continue;
+            }
+
+            LocalTime extStart = existing.getActualStartTime();
+            LocalTime extEnd = extStart.plusMinutes(existing.getActualDurationMinutes());
+
+            // Check for overlap: newStart < extEnd && extStart < newEnd
+            if (newStart.isBefore(extEnd) && extStart.isBefore(newEnd)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(
+                        "Student already has an overlapping CONDUCTED tutoring session on this date from %s to %s.",
+                        extStart, extEnd
+                ));
+            }
+        }
+    }
+
     @Transactional
     public SessionDto createSession(SessionDto dto) {
         Student student = studentRepository.findById(dto.getStudentId())
@@ -66,14 +101,22 @@ public class SessionService {
         Subject subject = subjectRepository.findById(dto.getSubjectId())
                 .orElseThrow(() -> new IllegalArgumentException("Subject not found"));
 
+        LocalTime actualStart = dto.getActualStartTime() != null ? dto.getActualStartTime() : dto.getScheduledStartTime();
+        Integer duration = dto.getActualDurationMinutes() != null ? dto.getActualDurationMinutes() : 60;
+        String status = dto.getStatus().toUpperCase();
+
+        if ("CONDUCTED".equals(status)) {
+            validateNoSessionOverlap(dto.getStudentId(), dto.getSessionDate(), actualStart, duration, null);
+        }
+
         Session session = new Session();
         session.setStudent(student);
         session.setSubject(subject);
         session.setSessionDate(dto.getSessionDate());
         session.setScheduledStartTime(dto.getScheduledStartTime());
-        session.setActualStartTime(dto.getActualStartTime() != null ? dto.getActualStartTime() : dto.getScheduledStartTime());
-        session.setActualDurationMinutes(dto.getActualDurationMinutes() != null ? dto.getActualDurationMinutes() : 60);
-        session.setStatus(dto.getStatus().toUpperCase());
+        session.setActualStartTime(actualStart);
+        session.setActualDurationMinutes(duration);
+        session.setStatus(status);
         session.setNotes(dto.getNotes());
 
         // Look up pricing rate for this student, subject, and session date
@@ -89,17 +132,26 @@ public class SessionService {
         Session session = sessionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Session not found"));
 
-        session.setSessionDate(dto.getSessionDate());
-        session.setScheduledStartTime(dto.getScheduledStartTime());
-        session.setActualStartTime(dto.getActualStartTime());
-        session.setActualDurationMinutes(dto.getActualDurationMinutes());
-        session.setStatus(dto.getStatus().toUpperCase());
+        LocalTime actualStart = dto.getActualStartTime() != null ? dto.getActualStartTime() : session.getActualStartTime();
+        Integer duration = dto.getActualDurationMinutes() != null ? dto.getActualDurationMinutes() : session.getActualDurationMinutes();
+        String status = dto.getStatus() != null ? dto.getStatus().toUpperCase() : session.getStatus();
+        LocalDate date = dto.getSessionDate() != null ? dto.getSessionDate() : session.getSessionDate();
+
+        if ("CONDUCTED".equals(status)) {
+            validateNoSessionOverlap(session.getStudent().getId(), date, actualStart, duration, id);
+        }
+
+        session.setSessionDate(date);
+        session.setScheduledStartTime(dto.getScheduledStartTime() != null ? dto.getScheduledStartTime() : session.getScheduledStartTime());
+        session.setActualStartTime(actualStart);
+        session.setActualDurationMinutes(duration);
+        session.setStatus(status);
         session.setNotes(dto.getNotes());
 
         if (dto.getRateCharged() != null) {
             session.setRateCharged(dto.getRateCharged());
         } else {
-            BigDecimal rate = studentService.getStudentRateForSession(session.getStudent().getId(), session.getSubject().getId(), dto.getSessionDate());
+            BigDecimal rate = studentService.getStudentRateForSession(session.getStudent().getId(), session.getSubject().getId(), date);
             session.setRateCharged(rate);
         }
 

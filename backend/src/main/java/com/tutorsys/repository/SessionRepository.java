@@ -34,4 +34,6 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     );
 
     List<Session> findByInvoiceIdAndDeletedFalse(Long invoiceId);
+
+    List<Session> findByStudentIdAndSessionDateAndStatusAndDeletedFalse(Long studentId, LocalDate sessionDate, String status);
 }

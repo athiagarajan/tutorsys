@@ -430,8 +430,8 @@ export default function AdminDashboard() {
       setSuccess('Attendance logged successfully!');
       setOpenSessionModal(false);
       fetchData();
-    } catch (err) {
-      setError('Failed to log attendance');
+    } catch (err: any) {
+      setError('Failed to log attendance: ' + (err.response?.data?.message || err.response?.data || err.message));
     }
   };
 
