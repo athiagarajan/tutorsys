@@ -58,6 +58,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return headerAuth.substring(7);
         }
 
+        // Fallback to query parameter (needed for browser downloads/exports)
+        String paramAuth = request.getParameter("Authorization");
+        if (StringUtils.hasText(paramAuth) && paramAuth.startsWith("Bearer ")) {
+            return paramAuth.substring(7);
+        }
+
         return null;
     }
 }

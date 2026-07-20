@@ -468,7 +468,8 @@ export default function AdminDashboard() {
   };
 
   const handleDownloadInvoice = (id: number) => {
-    window.open(`http://localhost:8080/api/invoices/${id}/download?Authorization=Bearer ${localStorage.getItem('token')}`, '_blank');
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+    window.open(`${baseUrl}/invoices/${id}/download?Authorization=Bearer ${localStorage.getItem('token')}`, '_blank');
   };
 
   // Payment Actions
@@ -491,7 +492,8 @@ export default function AdminDashboard() {
 
   // Export Reports
   const handleExportStudents = () => {
-    window.open('http://localhost:8080/api/reports/export/students', '_blank');
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+    window.open(`${baseUrl}/reports/export/students?Authorization=Bearer ${localStorage.getItem('token')}`, '_blank');
   };
 
   return (

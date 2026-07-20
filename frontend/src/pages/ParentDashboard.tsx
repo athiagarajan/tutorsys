@@ -157,7 +157,8 @@ export default function ParentDashboard() {
   };
 
   const handleDownloadInvoice = (id: number) => {
-    window.open(`http://localhost:8080/api/invoices/${id}/download?Authorization=Bearer ${localStorage.getItem('token')}`, '_blank');
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+    window.open(`${baseUrl}/invoices/${id}/download?Authorization=Bearer ${localStorage.getItem('token')}`, '_blank');
   };
 
   return (
