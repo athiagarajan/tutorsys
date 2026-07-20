@@ -414,6 +414,22 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteSession = async (id: number, invoiceNumber: string | null) => {
+    const confirmMessage = invoiceNumber
+      ? `This session is linked to invoice ${invoiceNumber}. Deleting this session will delete the invoice and allow you to regenerate a new one. Are you sure you want to proceed?`
+      : 'Are you sure you want to delete this tutoring session?';
+
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      await api.delete(`/sessions/${id}`);
+      setSuccess('Session deleted successfully!');
+      fetchData();
+    } catch (err: any) {
+      setError('Failed to delete session: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   // Attendance/Session Actions
   const handleSaveSession = async () => {
     try {
@@ -861,6 +877,7 @@ export default function AdminDashboard() {
                     <TableCell>Rate Charged</TableCell>
                     <TableCell>Invoice #</TableCell>
                     <TableCell>Notes</TableCell>
+                    <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -885,11 +902,21 @@ export default function AdminDashboard() {
                         <TableCell>${sess.rateCharged ?? '0.00'}</TableCell>
                         <TableCell>{sess.invoiceNumber ? <Chip label={sess.invoiceNumber} size="small" color="info" /> : <Chip label="Unbilled" size="small" />}</TableCell>
                         <TableCell>{sess.notes}</TableCell>
+                        <TableCell align="right">
+                          <IconButton 
+                            color="error" 
+                            size="small" 
+                            onClick={() => handleDeleteSession(sess.id, sess.invoiceNumber)}
+                            title={sess.invoiceNumber ? "Delete Session and Invoice" : "Delete Session"}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">No sessions match the filter criteria.</TableCell>
+                      <TableCell colSpan={9} align="center">No sessions match the filter criteria.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

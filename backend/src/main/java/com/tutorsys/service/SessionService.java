@@ -4,6 +4,8 @@ import com.tutorsys.dto.SessionDto;
 import com.tutorsys.entity.Session;
 import com.tutorsys.entity.Student;
 import com.tutorsys.entity.Subject;
+import com.tutorsys.entity.Invoice;
+import com.tutorsys.repository.InvoiceRepository;
 import com.tutorsys.repository.SessionRepository;
 import com.tutorsys.repository.StudentRepository;
 import com.tutorsys.repository.SubjectRepository;
@@ -25,13 +27,16 @@ public class SessionService {
     private final StudentRepository studentRepository;
     private final SubjectRepository subjectRepository;
     private final StudentService studentService;
+    private final InvoiceRepository invoiceRepository;
 
     public SessionService(SessionRepository sessionRepository, StudentRepository studentRepository,
-                          SubjectRepository subjectRepository, StudentService studentService) {
+                          SubjectRepository subjectRepository, StudentService studentService,
+                          InvoiceRepository invoiceRepository) {
         this.sessionRepository = sessionRepository;
         this.studentRepository = studentRepository;
         this.subjectRepository = subjectRepository;
         this.studentService = studentService;
+        this.invoiceRepository = invoiceRepository;
     }
 
     @Transactional(readOnly = true)
@@ -163,6 +168,30 @@ public class SessionService {
     public void deleteSession(Long id) {
         Session session = sessionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Session not found"));
+
+        if (session.getInvoice() != null) {
+            Invoice invoice = session.getInvoice();
+            
+            // Disassociate all other sessions linked to this invoice
+            List<Session> linkedSessions = sessionRepository.findByInvoiceIdAndDeletedFalse(invoice.getId());
+            for (Session s : linkedSessions) {
+                s.setInvoice(null);
+                sessionRepository.save(s);
+            }
+            
+            // Delete invoice PDF file if exists
+            if (invoice.getPdfFilePath() != null) {
+                try {
+                    new java.io.File(invoice.getPdfFilePath()).delete();
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
+            
+            // Delete invoice itself
+            invoiceRepository.delete(invoice);
+        }
+
         session.setDeleted(true);
         sessionRepository.save(session);
     }

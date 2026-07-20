@@ -1,9 +1,11 @@
 package com.tutorsys.service;
 
 import com.tutorsys.dto.SessionDto;
+import com.tutorsys.entity.Invoice;
 import com.tutorsys.entity.Session;
 import com.tutorsys.entity.Student;
 import com.tutorsys.entity.Subject;
+import com.tutorsys.repository.InvoiceRepository;
 import com.tutorsys.repository.SessionRepository;
 import com.tutorsys.repository.StudentRepository;
 import com.tutorsys.repository.SubjectRepository;
@@ -39,6 +41,9 @@ public class SessionServiceTest {
 
     @Mock
     private StudentService studentService;
+
+    @Mock
+    private InvoiceRepository invoiceRepository;
 
     @InjectMocks
     private SessionService sessionService;
@@ -138,5 +143,35 @@ public class SessionServiceTest {
         SessionDto result = sessionService.updateSession(10L, dto);
         assertNotNull(result);
         verify(sessionRepository, times(1)).save(any(Session.class));
+    }
+
+    @Test
+    void testDeleteSession_UnbilledSuccess() {
+        when(sessionRepository.findById(10L)).thenReturn(Optional.of(existingSession));
+        when(sessionRepository.save(any(Session.class))).thenReturn(existingSession);
+
+        sessionService.deleteSession(10L);
+
+        assertTrue(existingSession.isDeleted());
+        verify(sessionRepository, times(1)).save(existingSession);
+        verify(invoiceRepository, never()).delete(any(Invoice.class));
+    }
+
+    @Test
+    void testDeleteSession_BilledSuccessDeletesInvoice() {
+        Invoice invoice = new Invoice();
+        invoice.setId(100L);
+        existingSession.setInvoice(invoice);
+
+        when(sessionRepository.findById(10L)).thenReturn(Optional.of(existingSession));
+        when(sessionRepository.findByInvoiceIdAndDeletedFalse(100L)).thenReturn(Collections.singletonList(existingSession));
+        when(sessionRepository.save(any(Session.class))).thenReturn(existingSession);
+
+        sessionService.deleteSession(10L);
+
+        assertTrue(existingSession.isDeleted());
+        assertNull(existingSession.getInvoice());
+        verify(sessionRepository, times(2)).save(existingSession); // Once for disassociation, once for deletion status
+        verify(invoiceRepository, times(1)).delete(invoice);
     }
 }
